@@ -65,6 +65,7 @@ export async function GET() {
 
   const session = getServerSession(authOptions);
   const user: User = session?.user as User;
+  console.log("user", user);
 
   if (!session || !user) {
     return Response.json(

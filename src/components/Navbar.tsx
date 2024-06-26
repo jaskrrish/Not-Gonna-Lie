@@ -10,10 +10,10 @@ const Navbar = () => {
   const user: User = session?.user;
 
   return (
-    <nav className="p-4 md:p-6 shadow-md bg-gray-900 text-white">
+    <nav className="p-4 md:p-6 shadow-md bg-[#1e1e1e]/80 backdrop-blur-sm text-white">
       <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
         <a href="#" className="text-xl font-bold mb-4 md:mb-0">
-          Mystery Message
+          NGL
         </a>
         {session ? (
           <>

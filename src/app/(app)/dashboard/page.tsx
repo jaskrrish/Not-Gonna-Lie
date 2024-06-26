@@ -1,22 +1,21 @@
 "use client";
-
-import MessageCard from "@/components/MessageCard";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
 import { Message } from "@/model/User";
-import { acceptMessageSchema } from "@/schemas/acceptMessageSchema";
 import { ApiResponse } from "@/types/ApiResponse";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Separator } from "@radix-ui/react-separator";
-import { Switch } from "@radix-ui/react-switch";
-import { Button } from "@react-email/components";
 import axios, { AxiosError } from "axios";
 import { Loader2, RefreshCcw } from "lucide-react";
 import { User } from "next-auth";
 import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { acceptMessageSchema } from "@/schemas/acceptMessageSchema";
+import MessageCard from "@/components/MessageCard";
 
-const page = () => {
+function UserDashboard() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSwitchLoading, setIsSwitchLoading] = useState(false);
@@ -36,7 +35,7 @@ const page = () => {
   const { register, watch, setValue } = form;
   const acceptMessages = watch("acceptMessages");
 
-  const fetchAcceptMessage = useCallback(async () => {
+  const fetchAcceptMessages = useCallback(async () => {
     setIsSwitchLoading(true);
     try {
       const response = await axios.get<ApiResponse>("/api/accept-messages");
@@ -46,28 +45,26 @@ const page = () => {
       toast({
         title: "Error",
         description:
-          axiosError.response?.data.message ||
-          "Failed to Fetch Message Settings",
+          axiosError.response?.data.message ??
+          "Failed to fetch message settings",
         variant: "destructive",
       });
     } finally {
       setIsSwitchLoading(false);
     }
-  }, [setValue]);
+  }, [setValue, toast]);
 
   const fetchMessages = useCallback(
     async (refresh: boolean = false) => {
       setIsLoading(true);
       setIsSwitchLoading(false);
-
       try {
         const response = await axios.get<ApiResponse>("/api/get-messages");
         setMessages(response.data.messages || []);
-
         if (refresh) {
           toast({
-            title: "Refresh Messages",
-            description: "Showing Latest Messages",
+            title: "Refreshed Messages",
+            description: "Showing latest messages",
           });
         }
       } catch (error) {
@@ -75,8 +72,7 @@ const page = () => {
         toast({
           title: "Error",
           description:
-            axiosError.response?.data.message ||
-            "Failed to Fetch Message Settings",
+            axiosError.response?.data.message ?? "Failed to fetch messages",
           variant: "destructive",
         });
       } finally {
@@ -84,15 +80,19 @@ const page = () => {
         setIsSwitchLoading(false);
       }
     },
-    [setIsLoading, setMessages]
+    [setIsLoading, setMessages, toast]
   );
 
+  // Fetch initial state from the server
   useEffect(() => {
     if (!session || !session.user) return;
-    fetchAcceptMessage();
-    fetchMessages();
-  }, [session, setValue, fetchAcceptMessage, fetchMessages]);
 
+    fetchMessages();
+
+    fetchAcceptMessages();
+  }, [session, setValue, toast, fetchAcceptMessages, fetchMessages]);
+
+  // Handle switch change
   const handleSwitchChange = async () => {
     try {
       const response = await axios.post<ApiResponse>("/api/accept-messages", {
@@ -100,8 +100,7 @@ const page = () => {
       });
       setValue("acceptMessages", !acceptMessages);
       toast({
-        title: "Success",
-        description: response.data.message,
+        title: response.data.message,
         variant: "default",
       });
     } catch (error) {
@@ -109,15 +108,15 @@ const page = () => {
       toast({
         title: "Error",
         description:
-          axiosError.response?.data.message ||
-          "Failed to Fetch Message Settings",
+          axiosError.response?.data.message ??
+          "Failed to update message settings",
         variant: "destructive",
       });
     }
   };
 
   if (!session || !session.user) {
-    return <div>Please Login</div>;
+    return <div></div>;
   }
 
   const { username } = session.user as User;
@@ -192,6 +191,6 @@ const page = () => {
       </div>
     </div>
   );
-};
+}
 
-export default page;
+export default UserDashboard;
