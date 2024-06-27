@@ -13,7 +13,7 @@ import { useSession } from "next-auth/react";
 import React, { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { acceptMessageSchema } from "@/schemas/acceptMessageSchema";
-import MessageCard from "@/components/MessageCard";
+import { MessageCard } from "@/components/MessageCard";
 
 function UserDashboard() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -60,7 +60,9 @@ function UserDashboard() {
       setIsSwitchLoading(false);
       try {
         const response = await axios.get<ApiResponse>("/api/get-messages");
+        console.log(response.data.messages);
         setMessages(response.data.messages || []);
+        console.log(messages);
         if (refresh) {
           toast({
             title: "Refreshed Messages",
